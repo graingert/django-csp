@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.six.moves import http_client
 
 from csp.utils import build_policy
 
@@ -14,6 +15,11 @@ class CSPMiddleware(object):
     """
 
     def process_response(self, request, response):
+        # Check for debug view
+        if response.status_code == http_client.INTERNAL_SERVER_ERROR:
+            if settings.DEBUG:
+                return response
+
         if getattr(response, '_csp_exempt', False):
             return response
 
